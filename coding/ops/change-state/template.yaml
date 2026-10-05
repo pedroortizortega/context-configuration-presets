@@ -1,0 +1,36 @@
+# State file of one change. Copy to ops/change-state/<change>.yaml.
+# Owned by the project-manager. It holds STATE and LINKS only: no prose, no logs.
+# Per-run detail lives in .claude/handoffs/<change>/<group>-<agent>[-loopN].md
+change: ""
+ticket: ""
+status: INTAKE # see ORCHESTRATION.md for the allowed transitions
+spec_approved_by_human: false
+base_branch: "" # branch every group branches from and merges into; confirmed with the user in preflight
+implementation_tasks_total: 0
+implementation_tasks_completed: 0
+rework_cycles: 0
+current_group: ""
+groups: [] # one entry per `## N.` section of tasks.md
+# - id: g1
+#   tasks: ["1.1", "1.2"]
+#   developer_branch: feat/<change>/g1-<slug>
+#   tester_branch: feat/<change>/g1-tests
+#   status: pending|implementing|judging|testing|done|blocked
+#   fix_loops: 0
+decisions: [] # planner decisions and user answers
+# - id: d1
+#   type: AUTONOMOUS|USER_APPROVAL
+#   question: ""
+#   answer: ""
+#   source: <handoff path>
+spec_ambiguities: []
+open_items: []
+artifacts: []
+quality_gates: []
+risks: []
+handoffs: [] # links to per-run handoff files, newest last
+# - group: g1
+#   agent: developer
+#   decision: pass|rework|blocked
+#   file: .claude/handoffs/<change>/g1-developer.md
+last_handoff: {}
