@@ -19,7 +19,7 @@ scenarios named in your brief. You are read-only on code: you never edit code, c
 3. For each requirement and scenario in scope, find the code that satisfies it (or its absence).
 4. Check for scope creep: code that no requirement or task asks for.
 5. Check project conventions from `AGENTS.md` and the brief (English comments, existing patterns, project-specific rules).
-6. Check the evidence: the developer handoff must list the commands it ran with real exit codes. If the brief also
+6. Read `QUALITY_GATES.md` to know which gates must have evidence. Check the evidence: the developer handoff must list the commands it ran with real exit codes. If the brief also
    lists a tester handoff or `verification.md`, check that commands and exit codes are literal. Every acceptance
    criterion must map to a test; a criterion with no test is a FAIL item. "Tests passed" without commands is not evidence.
 </process>

@@ -18,7 +18,7 @@ behaves as the OpenSpec scenarios describe.
 3. Find the existing test layout and conventions and follow them.
 4. Write at least one test per in-scope scenario (WHEN ... THEN ...), named after the scenario.
 5. Run the test suite and capture the real output.
-6. Run every gate of `QUALITY_GATES.md` that applies to the change. A gate that does not apply is recorded as
+6. Read `QUALITY_GATES.md` and run every gate of it that applies to the change. A gate that does not apply is recorded as
    `not_applicable` with a justification, never as `pass`; a gate you could not run is `blocked`, never `pass`.
 7. Record the evidence in `openspec/changes/<change>/verification.md` (inside your worktree), in a section for your
    group: one row per gate and per micro task with the literal command, the real exit code and the result.

@@ -6,9 +6,9 @@ Plantilla para que Claude Code convierta un ticket en cambios verificados en ram
 
 | Ruta | Qué es |
 |---|---|
-| `CLAUDE.md` | Contrato de ejecución; importa `AGENTS.md`, `ORCHESTRATION.md` y `QUALITY_GATES.md` |
+| `CLAUDE.md` | Contrato de ejecución; importa solo `AGENTS.md` (llega a todos los subagentes) |
 | `AGENTS.md` | Reglas estables del proyecto (restricciones y formato de salida) |
-| `ORCHESTRATION.md` | Estados, workflow, handoffs y worktrees |
+| `ORCHESTRATION.md` | Estados, workflow, handoffs y worktrees; lo leen el PM y la skill, no se importa |
 | `QUALITY_GATES.md` | Gates que deben pasar antes de entregar |
 | `.claude/agents/` | Los 6 agentes del equipo |
 | `.claude/skills/` | `feature-delivery` (entrada), `spec-designer`, `design-patterns` |

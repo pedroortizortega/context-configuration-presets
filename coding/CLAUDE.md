@@ -1,10 +1,8 @@
 @AGENTS.md
-@ORCHESTRATION.md
-@QUALITY_GATES.md
 
 # Claude Code: contrato de ejecución
 
-Los archivos importados arriba son parte de este contrato. El cambio activo vive en `openspec/changes/` y su estado en `ops/change-state/`.
+`AGENTS.md` (importado arriba) llega a todos los subagentes. `ORCHESTRATION.md` y `QUALITY_GATES.md` no se importan a propósito, para no gastar contexto en cada rol: el project-manager y la skill `feature-delivery` leen `ORCHESTRATION.md`, y tester y judge reciben `QUALITY_GATES.md` por su brief. El cambio activo vive en `openspec/changes/` y su estado en `ops/change-state/`.
 
 Para trabajo de producto usa la skill `feature-delivery`. No implementes desde un ticket ambiguo ni desde una conversación como única especificación. No pases a `apply` hasta que el usuario apruebe explícitamente los artefactos OpenSpec.
 

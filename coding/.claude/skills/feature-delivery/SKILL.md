@@ -5,7 +5,7 @@ description: Punto de entrada para un ticket de backend. Convierte el ticket en 
 
 # Entrega de feature
 
-Esta skill solo cubre la **Fase 1 (especificación, sin código)** y el arranque del project-manager. La implementación, el juicio y la verificación los coordina el agente `project-manager` según `ORCHESTRATION.md`. No dupliques ese protocolo aquí.
+Lee `ORCHESTRATION.md` antes de empezar (estados, plantilla de delegación y handoff). Esta skill solo cubre la **Fase 1 (especificación, sin código)** y el arranque del project-manager. La implementación, el juicio y la verificación los coordina el agente `project-manager` según `ORCHESTRATION.md`. No dupliques ese protocolo aquí.
 
 ## Entrada
 
