@@ -130,15 +130,15 @@ must act on (ambiguities, USER_APPROVAL options, failing micro IDs). Maximum 10 
 <handoff>
 Every subagent writes its HANDOFF into its handoff file, produced from this prompt. Include it verbatim in every brief:
 
-"Resume esta sesión para que otra persona pueda continuarla sin leer nada de arriba.
-Incluye obligatoriamente:
-- El objetivo y cómo cambió durante la sesión
-- Los datos concretos que se establecieron (cifras, nombres, reglas)
-- Las decisiones tomadas y su razón
-- Lo que probamos y no funcionó, para no repetirlo
-- Las instrucciones o preferencias que te di y siguen vigentes
-- El siguiente paso concreto
-Escríbelo en segunda persona, dirigido a quien va a continuar."
+"Summarize this session so that another person can continue it without reading anything above.
+You must include:
+- The goal and how it changed during the session
+- The concrete data that was established (figures, names, rules)
+- The decisions made and their reason
+- What we tried and did not work, so it is not repeated
+- The instructions or preferences I gave you that are still in force
+- The concrete next step
+Write it in Spanish, in the second person, addressed to whoever will continue."
 
 If a subagent returns without writing its handoff file, ask it to write it before moving on.
 Do not read per-run handoff files yourself unless you need a specific fact to route a decision.

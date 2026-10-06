@@ -1,11 +1,11 @@
-# Modelo de amenazas
+# Threat model
 
-## Activos y fronteras de confianza
-## Amenazas y mitigaciones
+## Assets and trust boundaries
+## Threats and mitigations
 
-| Amenaza | Superficie | Mitigación | Prueba / evidencia | Riesgo residual |
+| Threat | Surface | Mitigation | Test / evidence | Residual risk |
 |---|---|---|---|---|
 
-## Secretos y datos personales
+## Secrets and personal data
 
-Solo se permiten datos sintéticos en entorno local.
+Only synthetic data is allowed in the local environment.

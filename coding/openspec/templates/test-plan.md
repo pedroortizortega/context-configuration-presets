@@ -1,10 +1,10 @@
-# Plan de pruebas
+# Test plan
 
-## Matriz de aceptación
+## Acceptance matrix
 
-| ID | Criterio | Tipo de prueba | Archivo/comando | Datos sintéticos |
+| ID | Criterion | Test type | File/command | Synthetic data |
 |---|---|---|---|---|
 
-## Regresión y bordes
+## Regression and edge cases
 
-## Dependencias locales Docker Compose
+## Local Docker Compose dependencies

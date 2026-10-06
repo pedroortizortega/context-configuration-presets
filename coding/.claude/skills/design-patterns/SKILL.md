@@ -1,20 +1,20 @@
 ---
 name: design-patterns
-description: Directrices para aplicar patrones de diseño en código Python (objetos de datos, protocolos, serializadores). Úsala al diseñar o implementar clases y módulos.
+description: Guidelines for applying design patterns in Python code (data objects, protocols, serializers). Use it when designing or implementing classes and modules.
 ---
 
-# Datos
+# Data
 
-Cuando se trate de objetos de datos, usa `dataclass`.
+For data objects, use `dataclass`.
 
-# Protocolos
+# Protocols
 
-Cuando necesites un contrato para entregar datos de A a B, define un `typing.Protocol` y haz que los consumidores dependan del protocolo, no de la clase concreta.
+When you need a contract to hand data from A to B, define a `typing.Protocol` and make consumers depend on the protocol, not on the concrete class.
 
-# Serializadores
+# Serializers
 
-Define los serializadores (por ejemplo, JSON) como implementaciones de un `Protocol`, de modo que se puedan inyectar y reemplazar.
+Define serializers (for example, JSON) as implementations of a `Protocol`, so they can be injected and replaced.
 
-# Constructores de objetos
+# Object constructors
 
-Pendiente de definir por el autor del preset: cuándo usar un objeto constructor (builder) o una factoría.
+Pending definition by the preset author: when to use a builder or a factory.

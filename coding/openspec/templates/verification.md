@@ -1,15 +1,15 @@
-# Verificación
+# Verification
 
-## Criterios de aceptación
+## Acceptance criteria
 
-| ID | Estado | Evidencia |
+| ID | Status | Evidence |
 |---|---|---|
 
 ## Gates
 
-| Gate | Estado | Comando literal | Exit code | Resumen |
+| Gate | Status | Literal command | Exit code | Summary |
 |---|---|---|---:|---|
 
-## Diff, migración y rollback
+## Diff, migration and rollback
 
-## Riesgos residuales y limitaciones
+## Residual risks and limitations

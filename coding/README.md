@@ -1,60 +1,73 @@
-# Preset de orquestación para backend Python
+# Orchestration preset for Python backends
 
-Plantilla para que Claude Code convierta un ticket en cambios verificados en ramas locales, listos para tu aprobación. Un equipo de agentes (project-manager, planner, architect, developer, judge, tester) trabaja sobre una especificación OpenSpec aprobada por un humano. No da acceso a AWS ni autoriza despliegues ni pushes.
+A template for Claude Code that turns a ticket into verified changes on local branches, ready for your approval. A team of agents (project-manager, planner, architect, developer, judge, tester) works from an OpenSpec specification that a human has approved. It gives no access to AWS and authorizes no deployments or pushes.
 
-## Contenido
+## Diagrams
 
-| Ruta | Qué es |
+Open them in a browser (they have light/dark mode, zoom and export).
+
+| Diagram | What it shows |
 |---|---|
-| `CLAUDE.md` | Contrato de ejecución; importa solo `AGENTS.md` (llega a todos los subagentes) |
-| `AGENTS.md` | Reglas estables del proyecto (restricciones y formato de salida) |
-| `ORCHESTRATION.md` | Estados, workflow, handoffs y worktrees; lo leen el PM y la skill, no se importa |
-| `QUALITY_GATES.md` | Gates que deben pasar antes de entregar |
-| `.claude/agents/` | Los 6 agentes del equipo |
-| `.claude/skills/` | `feature-delivery` (entrada), `spec-designer`, `design-patterns` |
-| `.claude/settings.json` | Permisos reales: `allow` y `deny` (sin AWS, sin `git push`) y un hook que impide `git merge` sobre `main`/`master` |
-| `.claude/hooks/block-merge-to-main.sh` | Hook PreToolUse (requiere `jq`): bloquea el merge a `main`/`master`; los merges dentro de ramas de trabajo siguen permitidos |
-| `openspec/` | Plantillas (`openspec/templates/`) de `test-plan`, `threat-model` y `verification` |
-| `ops/change-state/template.yaml` | Plantilla del estado de cada cambio |
-| `scripts/verify.sh` | Ejecuta los gates en orden (mismo script para local y CI) |
-| `docker-compose.test.yml`, `.env.test.example` | Stack local para el gate de integración |
+| [Ticket delivery flow](docs/diagrams/ticket-delivery-flow.html) | Lanes, human gates, the developer → judge → tester loop, rework and blocked states |
+| [Context architecture](docs/diagrams/context-architecture.html) | Which file reaches which role's context, and what the harness enforces outside the model |
 
-## Instalación
+The editable sources (`*.workflow.json`, `*.architecture.json`) live next to them in `docs/diagrams/`.
 
-1. Copia el contenido de esta carpeta (incluida `.claude/`) a la raíz del backend.
-2. Si el repo ya tiene `AGENTS.md` o `CLAUDE.md`, fusiona el contenido en lugar de sobrescribir.
-3. Adapta una vez al stack real: `QUALITY_GATES.md` y `scripts/verify.sh` (mantenlos idénticos), `docker-compose.test.yml` y las reglas de `AGENTS.md`.
-4. `.env.test.example` se versiona a propósito (solo valores sintéticos): `docker-compose.test.yml` lo lee directamente, así que cada worktree lo tiene. Nunca pongas secretos reales ahí.
+## Contents
 
-## Flujo operativo
+| Path | What it is |
+|---|---|
+| `CLAUDE.md` | Execution contract; imports only `AGENTS.md` (which reaches every subagent) |
+| `AGENTS.md` | Stable project rules (constraints and output format) |
+| `ORCHESTRATION.md` | States, workflow, handoffs and worktrees; read by the project-manager and the skill, not imported |
+| `QUALITY_GATES.md` | Gates that must pass before delivery |
+| `.claude/agents/` | The 6 agents of the team |
+| `.claude/skills/` | `feature-delivery` (entry point), `spec-designer`, `design-patterns` |
+| `.claude/settings.json` | Real permissions: `allow` and `deny` (no AWS, no `git push`) and a hook that prevents `git merge` on `main`/`master` |
+| `.claude/hooks/block-merge-to-main.sh` | PreToolUse hook (requires `jq`): blocks merging into `main`/`master`; merges inside working branches stay allowed |
+| `openspec/` | Templates (`openspec/templates/`) for `test-plan`, `threat-model` and `verification` |
+| `ops/change-state/template.yaml` | Template for the state of each change |
+| `scripts/verify.sh` | Runs the gates in order (same script for local and CI) |
+| `docker-compose.test.yml`, `.env.test.example` | Local stack for the integration gate |
+| `docs/diagrams/` | Flow and context-architecture diagrams |
 
-1. Abre Claude Code en el repo y entrega el ticket: `/feature-delivery <ticket>`.
-2. La skill crea `ops/change-state/<change>.yaml`, ejecuta `spec-designer` y se detiene hasta que apruebes la especificación (`SPEC_READY`).
-3. Con tu aprobación lanza al `project-manager`, que lee `ORCHESTRATION.md`, pide un plan al `planner` y espera tu aprobación del plan.
-4. Por cada grupo de tareas: `developer` → `judge` → `tester`, cada uno en su worktree y con un handoff en `.claude/handoffs/<change>/`.
-5. Cuando todo pasa, el estado es `READY_FOR_HUMAN` y recibes un único paquete de decisión: resumen, gates con `exit_code`, riesgos y rollback. Tú autorizas cada merge.
+## Installation
 
-Si necesitas que el project-manager te pregunte con más fluidez, ejecútalo como agente principal: `claude --agent project-manager`.
+1. Copy the contents of this folder (including `.claude/`) to the root of the backend.
+2. If the repo already has an `AGENTS.md` or a `CLAUDE.md`, merge the contents instead of overwriting.
+3. Adapt once to the real stack: `QUALITY_GATES.md` and `scripts/verify.sh` (keep them identical), `docker-compose.test.yml` and the rules in `AGENTS.md`.
+4. `.env.test.example` is versioned on purpose (synthetic values only): `docker-compose.test.yml` reads it directly, so every worktree has it. Never put real secrets in it.
 
-## Principios
+## Operating flow
 
-- `openspec/changes/<cambio>/` es la fuente de verdad del cambio actual; `ops/change-state/<cambio>.yaml` es su estado (solo estado y enlaces).
-- Cada agente entrega un handoff con bloque YAML (comandos, `exit_code`, artefactos) más prosa. Un `pass` sin evidencia es inválido.
-- El juez no escribe código. El developer no aprueba su propio trabajo.
-- Todo cambio de comportamiento incluye prueba automatizada o una excepción explícita aprobada.
-- Máximo 2 ciclos de corrección por grupo; después decide el planner.
-- Nada se mergea sin tu aprobación explícita; Claude no hace `push` ni `merge` sobre `main`/`master` (lo impide un hook).
+1. Open Claude Code in the repo and hand over the ticket: `/feature-delivery <ticket>`.
+2. The skill creates `ops/change-state/<change>.yaml`, runs `spec-designer` and stops until you approve the specification (`SPEC_READY`).
+3. With your approval it launches the `project-manager`, which reads `ORCHESTRATION.md`, asks the `planner` for a plan and waits for your approval of the plan.
+4. For each task group: `developer` → `judge` → `tester`, each in its own worktree and with a handoff in `.claude/handoffs/<change>/`.
+5. When everything passes, the status is `READY_FOR_HUMAN` and you receive a single decision package: summary, gates with `exit_code`, risks and rollback. You authorize every merge.
 
-## Por proyecto: qué configurar
+If you need the project-manager to ask you questions more smoothly, run it as the main agent: `claude --agent project-manager`.
 
-- `base_branch` se confirma contigo en el preflight del project-manager y queda en el estado del cambio.
-- Gates y comandos: `QUALITY_GATES.md` y `scripts/verify.sh`. Reemplaza una vez los marcadores en MAYÚSCULAS (`CONTRACT_TESTS_PATH`, `INTEGRATION_COMPOSE_FILE`, `INTEGRATION_SERVICE`) en ambos archivos, o omite el gate con `SKIP_GATES`. CI debe ejecutar el mismo script.
-- Plantillas de `openspec/templates/`: `test-plan.md` lo completa el planner, `threat-model.md` el architect y `verification.md` el tester (todo se coordina desde `feature-delivery`).
-- Modelos: el frontmatter de cada agente define `model` y `effort`; ajústalos al plan de tu equipo.
+## Principles
 
-## Antes del primer ticket
+- `openspec/changes/<change>/` is the source of truth for the current change; `ops/change-state/<change>.yaml` is its state (state and links only).
+- Every agent delivers a handoff with a YAML block (commands, `exit_code`, artifacts) plus prose. A `pass` without evidence is invalid.
+- The judge does not write code. The developer does not approve their own work.
+- Every behavior change includes an automated test or an explicit, approved exception.
+- At most 2 fix loops per group; after that the planner decides.
+- Nothing is merged without your explicit approval; Claude does not `push` or `merge` into `main`/`master` (a hook prevents it).
 
-- Haz funcionar localmente `bash scripts/verify.sh`.
-- Si creas un `.env.test` real, que no se versione (no hay `.gitignore` en este preset).
-- Protege `main`: PR, checks obligatorios y aprobación humana.
-- El cambio OpenSpec lo crea la skill `spec-designer` (no requiere el CLI de `openspec`). `openspec/config.yaml` y `schema.yaml` solo aplican si usas el CLI. Ojo: `schemas/production/schema.yaml` busca sus plantillas junto a él y hoy no están ahí (viven en `openspec/templates/`), y faltan las de `proposal`, `spec`, `design` y `tasks`; con el CLI ese schema no funcionaría hasta completarlas (o generar uno nuevo con `openspec schema fork`). No afecta al flujo de este preset.
+## Per-project configuration
+
+- `base_branch` is confirmed with you in the project-manager's preflight and stored in the change state.
+- Gates and commands: `QUALITY_GATES.md` and `scripts/verify.sh`. Replace the UPPERCASE placeholders (`CONTRACT_TESTS_PATH`, `INTEGRATION_COMPOSE_FILE`, `INTEGRATION_SERVICE`) once in both files, or skip the gate with `SKIP_GATES`. CI must run the same script.
+- Templates in `openspec/templates/`: the planner fills `test-plan.md`, the architect fills `threat-model.md` and the tester fills `verification.md` (all coordinated from `feature-delivery`).
+- Models: the frontmatter of each agent defines `model` and `effort`; adjust them to your team's plan.
+- Language: these files are in English. Agents still talk to you and write handoff prose in Spanish, as their own prompts instruct; change that in the agent files if your team prefers another language.
+
+## Before the first ticket
+
+- Make `bash scripts/verify.sh` work locally.
+- If you create a real `.env.test`, make sure it is not versioned (this preset ships no `.gitignore`).
+- Protect `main`: pull requests, required checks and human approval.
+- The OpenSpec change is created by the `spec-designer` skill (it does not need the `openspec` CLI). `openspec/config.yaml` and `schema.yaml` only apply if you use the CLI. Note: `schemas/production/schema.yaml` looks for its templates next to it and today they are not there (they live in `openspec/templates/`), and the `proposal`, `spec`, `design` and `tasks` templates are missing; with the CLI that schema would not work until they are added (or until you generate a new one with `openspec schema fork`). It does not affect the flow of this preset.

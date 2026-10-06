@@ -1,24 +1,24 @@
-# Gates locales obligatorios
+# Mandatory local gates
 
-Sustituya los comandos por los reales del repositorio y manténgalos idénticos en CI.
+Replace the commands with the real ones of the repository and keep them identical in CI.
 
-| Gate | Comando inicial recomendado | Bloquea |
+| Gate | Recommended starting command | Blocks |
 |---|---|---|
-| Dependencias reproducibles | `uv sync --frozen` | lock desactualizado o instalación rota |
-| Formato | `uv run ruff format --check .` | formato |
-| Lint | `uv run ruff check .` | errores estáticos |
-| Tipos | `uv run mypy src tests` | contrato de tipos |
-| Unitarias | `uv run pytest -m 'not integration and not e2e'` | lógica |
-| Integración | `docker compose -f INTEGRATION_COMPOSE_FILE up --build --abort-on-container-exit --exit-code-from INTEGRATION_SERVICE` | DB, colas y API |
-| Seguridad | `uv run bandit -r src && uv run pip-audit` | patrones inseguros y CVEs |
-| Contrato | `uv run pytest CONTRACT_TESTS_PATH` | API pública |
+| Reproducible dependencies | `uv sync --frozen` | outdated lock file or broken install |
+| Format | `uv run ruff format --check .` | formatting |
+| Lint | `uv run ruff check .` | static errors |
+| Types | `uv run mypy src tests` | type contract |
+| Unit | `uv run pytest -m 'not integration and not e2e'` | logic |
+| Integration | `docker compose -f INTEGRATION_COMPOSE_FILE up --build --abort-on-container-exit --exit-code-from INTEGRATION_SERVICE` | DB, queues and API |
+| Security | `uv run bandit -r src && uv run pip-audit` | insecure patterns and CVEs |
+| Contract | `uv run pytest CONTRACT_TESTS_PATH` | public API |
 
-`scripts/verify.sh` ejecuta estos gates en orden y se detiene en el primero que falla; CI debe invocar el mismo script. Para omitir gates: `SKIP_GATES="integration,contract" bash scripts/verify.sh`.
+`scripts/verify.sh` runs these gates in order and stops at the first one that fails; CI must invoke the same script. To skip gates: `SKIP_GATES="integration,contract" bash scripts/verify.sh`.
 
-Los tokens en MAYÚSCULAS (`CONTRACT_TESTS_PATH`, `INTEGRATION_COMPOSE_FILE`, `INTEGRATION_SERVICE`) son marcadores que se reemplazan una vez por proyecto, en este archivo y en `scripts/verify.sh`. Si quedan sin reemplazar, `verify.sh` falla con exit code 2 en lugar de ejecutar un comando inventado.
+UPPERCASE tokens (`CONTRACT_TESTS_PATH`, `INTEGRATION_COMPOSE_FILE`, `INTEGRATION_SERVICE`) are placeholders that are replaced once per project, in this file and in `scripts/verify.sh`. If they are left unreplaced, `verify.sh` fails with exit code 2 instead of running an invented command.
 
-Un gate no aplicable debe registrarse como `not_applicable` con justificación; nunca como `pass`.
+A gate that does not apply must be recorded as `not_applicable` with a justification; never as `pass`.
 
-## Criterio para READY_FOR_HUMAN
+## Criteria for READY_FOR_HUMAN
 
-Todos los gates aplicables pasan; las pruebas cubren criterios de aceptación; el juez aprueba; el diff no contiene secretos; existe rollback local y no hay deuda o riesgo crítico sin una aceptación explícita de usted.
+All applicable gates pass; the tests cover the acceptance criteria; the judge approves; the diff contains no secrets; a local rollback exists and there is no critical debt or risk without an explicit acceptance from the user.
