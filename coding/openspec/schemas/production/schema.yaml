@@ -1,0 +1,42 @@
+name: production
+version: 1
+description: Cambio OpenSpec con pruebas, seguridad y verificación para backend Python local.
+artifacts:
+  - id: proposal
+    generates: proposal.md
+    description: Problema, alcance y fuera de alcance
+    template: proposal.md
+    requires: []
+  - id: specs
+    generates: openspec/**/spec.md
+    description: Requisitos verificables y escenarios
+    template: spec.md
+    requires: [proposal]
+  - id: design
+    generates: design.md
+    description: Diseño técnico, API, datos y compatibilidad
+    template: design.md
+    requires: [proposal]
+  - id: test-plan
+    generates: test-plan.md
+    description: Matriz de criterios, pruebas y datos sintéticos
+    template: test-plan.md
+    requires: [specs, design]
+  - id: threat-model
+    generates: threat-model.md
+    description: Activos, fronteras, amenazas y mitigaciones
+    template: threat-model.md
+    requires: [specs, design]
+  - id: tasks
+    generates: tasks.md
+    description: Tareas pequeñas ordenadas con prueba asociada
+    template: tasks.md
+    requires: [specs, design, test-plan, threat-model]
+  - id: verification
+    generates: verification.md
+    description: Evidencia literal de gates y criterio de salida
+    template: verification.md
+    requires: [tasks]
+apply:
+  requires: [tasks, verification]
+  tracks: tasks.md

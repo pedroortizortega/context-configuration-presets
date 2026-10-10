@@ -1,0 +1,238 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Coding Agent: Ticket Delivery Flow",
+    "output": "ticket-delivery-flow.html",
+    "quality_profile": "showcase",
+    "legend": {
+      "mode": "auto",
+      "entries": {
+        "external": {
+          "label": "Input"
+        },
+        "backend": {
+          "label": "Agent work"
+        },
+        "security": {
+          "label": "Human gate"
+        },
+        "messagebus": {
+          "label": "Rework / blocked"
+        }
+      }
+    },
+    "viewBox": [
+      1240,
+      660
+    ]
+  },
+  "lanes": [
+    {
+      "id": "human",
+      "label": "You (human)"
+    },
+    {
+      "id": "orch",
+      "label": "Orchestration: feature-delivery skill + project-manager"
+    },
+    {
+      "id": "workers",
+      "label": "Group loop: subagents in worktrees"
+    },
+    {
+      "id": "exceptions",
+      "label": "Rework + Blocked",
+      "variant": "exception"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "spec",
+      "lane": "orch",
+      "col": 0,
+      "type": "backend",
+      "label": "Specify",
+      "sublabel": "ticket → spec-designer",
+      "tag": "INTAKE",
+      "width": 124
+    },
+    {
+      "id": "approve_spec",
+      "lane": "human",
+      "col": 1,
+      "type": "security",
+      "label": "Approve spec",
+      "sublabel": "SPEC_READY",
+      "tag": "human gate",
+      "width": 104
+    },
+    {
+      "id": "plan",
+      "lane": "orch",
+      "col": 2,
+      "type": "backend",
+      "label": "Preflight + plan",
+      "sublabel": "planner: groups",
+      "tag": "reads ORCHESTRATION",
+      "width": 124
+    },
+    {
+      "id": "approve_plan",
+      "lane": "human",
+      "col": 3,
+      "type": "security",
+      "label": "Approve plan",
+      "sublabel": "HUMAN_SPEC_APPROVED",
+      "tag": "human gate",
+      "width": 124
+    },
+    {
+      "id": "developer",
+      "lane": "workers",
+      "col": 3,
+      "type": "backend",
+      "label": "Developer",
+      "sublabel": "IMPLEMENTING",
+      "width": 104
+    },
+    {
+      "id": "judge",
+      "lane": "workers",
+      "col": 4,
+      "type": "backend",
+      "label": "Judge",
+      "sublabel": "JUDGING"
+    },
+    {
+      "id": "tester",
+      "lane": "workers",
+      "col": 5,
+      "type": "backend",
+      "label": "Tester",
+      "sublabel": "VERIFYING: gates",
+      "width": 116
+    },
+    {
+      "id": "approve_merge",
+      "lane": "human",
+      "col": 5,
+      "type": "security",
+      "label": "Authorize merge",
+      "sublabel": "READY_FOR_HUMAN",
+      "tag": "not main/master",
+      "width": 124
+    },
+    {
+      "id": "rework",
+      "lane": "exceptions",
+      "col": 4,
+      "type": "messagebus",
+      "label": "Rework",
+      "sublabel": "max 2 fix loops"
+    },
+    {
+      "id": "blocked",
+      "lane": "exceptions",
+      "col": 5,
+      "type": "messagebus",
+      "label": "Blocked",
+      "sublabel": "planner decides"
+    }
+  ],
+  "edges": [
+    {
+      "from": "spec",
+      "to": "approve_spec",
+      "fromSide": "top",
+      "toSide": "left"
+    },
+    {
+      "from": "approve_spec",
+      "to": "plan",
+      "label": "approved",
+      "fromSide": "right",
+      "toSide": "top"
+    },
+    {
+      "from": "plan",
+      "to": "approve_plan"
+    },
+    {
+      "from": "approve_plan",
+      "to": "developer"
+    },
+    {
+      "from": "developer",
+      "to": "judge",
+      "label": "pass"
+    },
+    {
+      "from": "judge",
+      "to": "tester",
+      "label": "pass"
+    },
+    {
+      "from": "tester",
+      "to": "approve_merge",
+      "label": "exit 0"
+    },
+    {
+      "from": "judge",
+      "to": "rework",
+      "label": "FAIL",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "from": "tester",
+      "to": "rework",
+      "label": "FAIL",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "from": "rework",
+      "to": "developer",
+      "label": "fix",
+      "variant": "dashed",
+      "role": "return"
+    },
+    {
+      "from": "rework",
+      "to": "blocked",
+      "label": "exhausted",
+      "variant": "security",
+      "role": "error"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "Human gates",
+      "items": [
+        "You approve the spec and the plan before any code",
+        "You authorize every merge into the base branch",
+        "A hook blocks agents from merging into main or master"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Evidence rules",
+      "items": [
+        "Every agent writes a YAML handoff with commands and exit codes",
+        "A pass without evidence is treated as rework",
+        "The tester records gate results in verification.md"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Limits",
+      "items": [
+        "Maximum 2 fix loops per group, then the planner decides",
+        "State lives in ops/change-state/<change>.yaml",
+        "No push and no deployment from this flow"
+      ]
+    }
+  ]
+}

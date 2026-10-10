@@ -1,0 +1,24 @@
+# Local integration-test stack. Synthetic data only: never point this at real services.
+# Used by the "integration" gate: the exit code of the `api` service is the gate result.
+# Adapt the services (queue, cache, ...) to the real backend.
+# env_file points to the committed .env.test.example (synthetic values) so that every git worktree has it.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test -d test"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  api:
+    build: .
+    env_file: .env.test.example
+    depends_on:
+      db:
+        condition: service_healthy
+    command: uv run pytest -m integration

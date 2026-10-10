@@ -1,0 +1,326 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Coding Agent: Context Architecture",
+    "output": "context-architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1040,
+      640
+    ],
+    "legend": {
+      "mode": "auto",
+      "entries": {
+        "cloud": {
+          "label": "Always-loaded context"
+        },
+        "database": {
+          "label": "Contract / data file"
+        },
+        "backend": {
+          "label": "Role (agent)"
+        },
+        "security": {
+          "label": "Enforced by the harness"
+        }
+      }
+    }
+  },
+  "components": [
+    {
+      "id": "claude",
+      "type": "cloud",
+      "label": "CLAUDE.md",
+      "sublabel": "imports AGENTS.md",
+      "tag": "every role",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "orchestration",
+      "type": "database",
+      "label": "ORCHESTRATION.md",
+      "sublabel": "states, brief, handoff",
+      "pos": [
+        40,
+        150
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "harness",
+      "type": "security",
+      "label": "settings + hook",
+      "sublabel": "allow/deny, merge guard",
+      "pos": [
+        40,
+        340
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "skill",
+      "type": "backend",
+      "label": "feature-delivery",
+      "sublabel": "skill, main thread",
+      "pos": [
+        290,
+        40
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "pm",
+      "type": "backend",
+      "label": "project-manager",
+      "sublabel": "coordinates the group loop",
+      "pos": [
+        290,
+        190
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "artifacts",
+      "type": "database",
+      "label": "Change files",
+      "sublabel": "openspec, state, handoffs",
+      "pos": [
+        290,
+        340
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "planner",
+      "type": "backend",
+      "label": "planner",
+      "sublabel": "plan + test-plan",
+      "pos": [
+        570,
+        40
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "architect",
+      "type": "backend",
+      "label": "architect",
+      "sublabel": "design + threat-model",
+      "pos": [
+        570,
+        140
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "developer",
+      "type": "backend",
+      "label": "developer",
+      "sublabel": "design-patterns skill",
+      "pos": [
+        570,
+        240
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "judge",
+      "type": "backend",
+      "label": "judge",
+      "sublabel": "read-only review",
+      "pos": [
+        570,
+        340
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "tester",
+      "type": "backend",
+      "label": "tester",
+      "sublabel": "tests + verification.md",
+      "pos": [
+        570,
+        440
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "gates",
+      "type": "database",
+      "label": "QUALITY_GATES",
+      "sublabel": "+ scripts/verify.sh",
+      "pos": [
+        830,
+        390
+      ],
+      "size": [
+        160,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Subagents: each also gets CLAUDE.md and AGENTS.md",
+      "wraps": [
+        "planner",
+        "architect",
+        "developer",
+        "judge",
+        "tester"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "claude-to-skill",
+      "from": "claude",
+      "to": "skill",
+      "label": "auto-loaded"
+    },
+    {
+      "id": "orch-to-skill",
+      "from": "orchestration",
+      "to": "skill",
+      "label": "reads"
+    },
+    {
+      "id": "orch-to-pm",
+      "from": "orchestration",
+      "to": "pm",
+      "label": "reads"
+    },
+    {
+      "id": "harness-to-pm",
+      "from": "harness",
+      "to": "pm",
+      "label": "enforces",
+      "variant": "security"
+    },
+    {
+      "id": "skill-to-pm",
+      "from": "skill",
+      "to": "pm",
+      "label": "launches",
+      "variant": "emphasis",
+      "labelDy": 24
+    },
+    {
+      "id": "pm-to-artifacts",
+      "from": "pm",
+      "to": "artifacts",
+      "label": "state",
+      "variant": "dashed",
+      "labelDy": 24
+    },
+    {
+      "id": "pm-to-planner",
+      "from": "pm",
+      "to": "planner",
+      "label": "briefs all four roles"
+    },
+    {
+      "id": "pm-to-developer",
+      "from": "pm",
+      "to": "developer"
+    },
+    {
+      "id": "pm-to-judge",
+      "from": "pm",
+      "to": "judge"
+    },
+    {
+      "id": "pm-to-tester",
+      "from": "pm",
+      "to": "tester"
+    },
+    {
+      "id": "planner-to-architect",
+      "from": "planner",
+      "to": "architect",
+      "label": "consults",
+      "variant": "dashed",
+      "labelDy": 24
+    },
+    {
+      "id": "gates-to-judge",
+      "from": "gates",
+      "to": "judge",
+      "label": "reads"
+    },
+    {
+      "id": "gates-to-tester",
+      "from": "gates",
+      "to": "tester",
+      "label": "reads"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Always loaded",
+      "items": [
+        "CLAUDE.md and its import AGENTS.md reach the main thread and every subagent",
+        "Kept small on purpose: project rules only"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Read on demand",
+      "items": [
+        "ORCHESTRATION.md: the skill and the project-manager only",
+        "QUALITY_GATES.md: tester and judge",
+        "Specs and handoffs arrive as paths in each brief"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Outside the model",
+      "items": [
+        "settings.json allow/deny rules",
+        "Hook that blocks merges into main or master",
+        "Both apply regardless of what a prompt says"
+      ]
+    }
+  ]
+}
