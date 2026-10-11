@@ -1,7 +1,8 @@
 # Local integration-test stack. Synthetic data only: never point this at real services.
 # Used by the "integration" gate: the exit code of the `api` service is the gate result.
 # Adapt the services (queue, cache, ...) to the real backend.
-# env_file points to the committed .env.test.example (synthetic values) so that every git worktree has it.
+# Paths are relative to this file (deploy/), so the build context and env_file point one level up.
+# .env.test.example holds synthetic values and is git-ignored in the target project: create it in each worktree.
 services:
   db:
     image: postgres:16-alpine
@@ -16,8 +17,8 @@ services:
       retries: 15
 
   api:
-    build: .
-    env_file: .env.test.example
+    build: ..
+    env_file: ../.env.test.example
     depends_on:
       db:
         condition: service_healthy
