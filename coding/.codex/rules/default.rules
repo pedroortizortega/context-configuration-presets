@@ -1,0 +1,50 @@
+# Block commands that the Claude project policy marks as dangerous.
+prefix_rule(
+    pattern = ["aws"],
+    decision = "forbidden",
+    justification = "AWS commands are blocked by repository policy.",
+)
+
+prefix_rule(
+    pattern = ["terraform", "apply"],
+    decision = "forbidden",
+    justification = "Terraform apply is blocked; use a reviewed deployment workflow.",
+)
+
+prefix_rule(
+    pattern = ["cdk", "deploy"],
+    decision = "forbidden",
+    justification = "CDK deployment is blocked; use a reviewed deployment workflow.",
+)
+
+prefix_rule(
+    pattern = ["kubectl"],
+    decision = "forbidden",
+    justification = "Kubernetes commands are blocked by repository policy.",
+)
+
+prefix_rule(
+    pattern = ["docker", "context"],
+    decision = "forbidden",
+    justification = "Docker context commands are blocked by repository policy.",
+)
+
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "forbidden",
+    justification = "Agents must not push changes; ask the user to push.",
+)
+
+prefix_rule(
+    pattern = ["rm", "-rf"],
+    decision = "forbidden",
+    justification = "Recursive forced deletion is blocked; use a narrower, reviewable operation.",
+)
+
+# Safe command prefixes retained from the Claude project policy. These rules
+# affect approval to run outside the sandbox; they do not grant filesystem access.
+prefix_rule(pattern = ["uv", "sync"], decision = "allow")
+prefix_rule(pattern = ["uv", "run"], decision = "allow")
+prefix_rule(pattern = ["docker", "compose"], decision = "allow")
+prefix_rule(pattern = ["bash", "scripts/verify.sh"], decision = "allow")
+prefix_rule(pattern = ["git", ["status", "diff", "log", "branch", "worktree", "add", "commit", "merge"]], decision = "allow")
