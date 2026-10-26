@@ -1,4 +1,7 @@
 {
+  "env": {
+    "CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH": "4"
+  },
   "permissions": {
     "allow": [
       "Bash(uv sync*)",

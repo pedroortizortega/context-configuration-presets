@@ -22,7 +22,7 @@ The editable sources (`*.workflow.json`, `*.architecture.json`) live next to the
 | `CLAUDE.md` | Claude Code only: execution contract; imports only `AGENTS.md` (which reaches every subagent) |
 | `AGENTS.md` | Stable project rules (constraints and output format) |
 | `ORCHESTRATION.md` | States, workflow, handoffs and worktrees; read by the project-manager and the skill, not imported |
-| `QUALITY_GATES.md` | Gates that must pass before delivery |
+| `QUALITY_GATES.md`, `QUALITY_GATES_FRONTEND.md` | Gates that must pass before delivery (backend / frontend) |
 | `.codex/` | Codex configuration, agents, skills, rules and hooks (installed only with `--harness codex`) |
 | `.claude/agents/` | The 6 agents of the Claude Code team (installed with the rest of `.claude/` only with `--harness claude`) |
 | `.claude/skills/` | `feature-delivery` (entry point), `spec-designer`, `design-patterns` |
@@ -70,7 +70,7 @@ If you need the project-manager to ask you questions more smoothly, run it as th
 
 ## Per-project configuration
 
-- `base_branch` is confirmed with you in the project-manager's preflight and stored in the change state.
+- `base_branch` is confirmed with you in the project-manager's preflight and stored in the change state. It must not be `main`/`master` (the merge hook blocks merges there): use an integration branch such as `integration/<change>`.
 - Gates and commands: `QUALITY_GATES.md` and `scripts/verify.sh`. Replace the UPPERCASE placeholders (`CONTRACT_TESTS_PATH`, `INTEGRATION_COMPOSE_FILE`, `INTEGRATION_SERVICE`) once in both files, or skip the gate with `SKIP_GATES`. CI must run the same script.
 - Templates in `openspec/templates/`: the planner fills `test-plan.md`, the architect fills `threat-model.md` and the tester fills `verification.md` (all coordinated from `feature-delivery`).
 - Models: the frontmatter of each agent defines `model` and `effort`; adjust them to your team's plan.

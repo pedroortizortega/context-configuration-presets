@@ -1,5 +1,5 @@
 # State file of one change. Copy to ops/change-state/<change>.yaml.
-# Owned by the project-manager. It holds STATE and LINKS only: no prose, no logs.
+# Created by feature-delivery (INTAKE/SPEC_READY, spec_approved_by_human); after that owned only by the project-manager. It holds STATE and LINKS only: no prose, no logs.
 # Per-run detail lives in .claude/handoffs/<change>/<group>-<agent>[-loopN].md
 change: ""
 ticket: ""
@@ -13,9 +13,10 @@ current_group: ""
 groups: [] # one entry per `## N.` section of tasks.md
 # - id: g1
 #   tasks: ["1.1", "1.2"]
-#   developer_branch: feat/<change>/g1-<slug>
+#   agent: developer|frontend-developer # assigned by the planner
+#   implementer_branch: feat/<change>/g1-<slug>
 #   tester_branch: feat/<change>/g1-tests
-#   status: pending|implementing|judging|testing|done|blocked
+#   status: pending|implementing|judging|verifying|rework|done|blocked # lowercase mirror of the global status
 #   fix_loops: 0
 decisions: [] # planner decisions and user answers
 # - id: d1
@@ -30,7 +31,7 @@ quality_gates: []
 risks: []
 handoffs: [] # links to per-run handoff files, newest last
 # - group: g1
-#   agent: developer
+#   agent: developer|frontend-developer|designer|judge|tester|planner
 #   decision: pass|rework|blocked
 #   file: .claude/handoffs/<change>/g1-developer.md
 last_handoff: {}
