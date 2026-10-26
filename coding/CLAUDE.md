@@ -2,7 +2,7 @@
 
 # Claude Code: execution contract
 
-`AGENTS.md` (imported above) reaches every subagent. `ORCHESTRATION.md` and `QUALITY_GATES.md` are not imported on purpose, to avoid spending context on every role: the project-manager and the `feature-delivery` skill read `ORCHESTRATION.md`, and the tester and the judge receive `QUALITY_GATES.md` through their brief. The active change lives in `openspec/changes/` and its state in `ops/change-state/`.
+`AGENTS.md` (imported above) reaches every subagent. `ORCHESTRATION.md`, `QUALITY_GATES.md` and `QUALITY_GATES_FRONTEND.md` are not imported on purpose, to avoid spending context on every role: the project-manager and the `feature-delivery` skill read `ORCHESTRATION.md`, and the tester and the judge receive the gates files through their brief. The active change lives in `openspec/changes/` and its state in `ops/change-state/`.
 
 For product work use the `feature-delivery` skill. Do not implement from an ambiguous ticket or from a conversation as the only specification. Do not move to `apply` until the user explicitly approves the OpenSpec artifacts.
 

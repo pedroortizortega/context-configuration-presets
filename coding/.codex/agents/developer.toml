@@ -55,7 +55,7 @@ Write to the handoff file path given in your brief:
 3. Architect recommendations you followed, if any.
 4. The YAML block from the brief first (`role: developer`; every command you ran under `commands_run` with its real
    exit code), then the prose HANDOFF (Spanish, second person). A `pass` without evidence is invalid.
-Then return only: status (DONE/BLOCKED), branch, handoff file path, and any ambiguity or open question — maximum 10 lines.
+Then return only: status (done|blocked), branch, handoff file path, and any ambiguity or open question — maximum 10 lines.
 </final_message>
 """
 
