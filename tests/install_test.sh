@@ -9,7 +9,7 @@ for path in .codex .claude deploy openspec ops scripts; do
     mkdir -p "$tmp/repo/coding/$path"
     printf '%s\n' "$path" > "$tmp/repo/coding/$path/preset"
 done
-for path in .env.test.example .gitignore.extras AGENTS.md ORCHESTRATION.md QUALITY_GATES.md CLAUDE.md scripts/verify.sh; do
+for path in .env.test.example .gitignore.extras AGENTS.md ORCHESTRATION.md QUALITY_GATES.md QUALITY_GATES_FRONTEND.md CLAUDE.md scripts/verify.sh; do
     printf '%s\n' "$path" > "$tmp/repo/coding/$path"
 done
 chmod +x "$tmp/repo/coding/scripts/verify.sh"
@@ -34,6 +34,12 @@ mkdir "$tmp/conflict"
 printf 'custom\n' > "$tmp/conflict/QUALITY_GATES.md"
 reject --harness codex --target "$tmp/conflict"
 [[ ! -e "$tmp/conflict/.codex" && $(cat "$tmp/conflict/QUALITY_GATES.md") == custom ]]
+# Conflicts: stop without --update, replace (with backup) when --update is given.
+run --harness codex --target "$tmp/conflict" --dry-run >/dev/null
+[[ $(cat "$tmp/conflict/QUALITY_GATES.md") == custom ]]
+run --harness codex --target "$tmp/conflict" --update >/dev/null
+cmp -s "$tmp/repo/coding/QUALITY_GATES.md" "$tmp/conflict/QUALITY_GATES.md"
+[[ $(cat "$tmp/conflict"/QUALITY_GATES.md.preset-backup.*) == custom ]]
 ln -s "$tmp/claude" "$tmp/link"
 reject --harness codex --target "$tmp/link/child"
 mkdir "$tmp/nested-link"

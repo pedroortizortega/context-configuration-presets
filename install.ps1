@@ -1,9 +1,10 @@
-# Install coding presets without replacing user files. Windows PowerShell 5.1+.
+# Install coding presets; conflicting files are replaced only after confirmation. Windows PowerShell 5.1+.
 [CmdletBinding()]
 param(
     [string]$Harness,
     [string]$Target,
     [switch]$DryRun,
+    [switch]$Update,
     [switch]$Help
 )
 Set-StrictMode -Version 2.0
@@ -69,11 +70,14 @@ function Collect([string]$Relative) {
 try {
     if ($Help) {
         Write-Output @'
-Usage: .\install.ps1 -Harness codex|claude -Target PROJECT_DIR [-DryRun]
+Usage: .\install.ps1 -Harness codex|claude -Target PROJECT_DIR [-DryRun] [-Update]
 Without arguments, prompts for the harness and project root.
-Existing identical files are skipped; conflicting files abort before writes.
+Existing identical files are skipped. Conflicting files are listed before any write; an interactive
+session asks whether to stop or update them, and a non-interactive run stops unless -Update is given.
+Updated files are first saved next to the original as <file>.preset-backup.<timestamp>.
 Local drive paths only; symlinks, junctions and parent traversal are rejected.
--DryRun validates without creating files or directories. -Help shows this help.
+-DryRun validates (including conflicts) without creating files or directories.
+-Update replaces conflicting files without asking (backups are kept). -Help shows this help.
 Requires Windows PowerShell 5.1 or PowerShell 7 on Windows.
 '@
         exit 0
@@ -112,7 +116,8 @@ Requires Windows PowerShell 5.1 or PowerShell 7 on Windows.
     $directories = New-Object 'System.Collections.Generic.List[string]'
     $files = New-Object 'System.Collections.Generic.List[object]'
     $pending = New-Object 'System.Collections.Generic.List[object]'
-    $paths = @(".$Harness", 'deploy', 'openspec', 'ops', 'scripts\verify.sh', '.env.test.example', '.gitignore.extras', 'AGENTS.md', 'ORCHESTRATION.md', 'QUALITY_GATES.md')
+    $conflicts = New-Object 'System.Collections.Generic.List[object]'
+    $paths = @(".$Harness", 'deploy', 'openspec', 'ops', 'scripts\verify.sh', '.env.test.example', '.gitignore.extras', 'AGENTS.md', 'ORCHESTRATION.md', 'QUALITY_GATES.md', 'QUALITY_GATES_FRONTEND.md')
     if ($Harness -eq 'claude') { $paths += 'CLAUDE.md' }
     foreach ($path in $paths) { Collect $path }
     $directories.Add('scripts')
@@ -126,9 +131,13 @@ Requires Windows PowerShell 5.1 or PowerShell 7 on Windows.
         Assert-NoLink $destination
         $attributes = Get-Attributes $destination
         if ($null -ne $attributes) {
-            if (($attributes -band [IO.FileAttributes]::Directory) -or
-                (Get-FileHash -LiteralPath $destination -Algorithm SHA256).Hash -ne $file.Hash) {
-                throw "File conflict: $destination (back up or move it first)."
+            if ($attributes -band [IO.FileAttributes]::Directory) {
+                throw "File conflict: $destination is a directory (back up or move it first)."
+            }
+            if ((Get-FileHash -LiteralPath $destination -Algorithm SHA256).Hash -ne $file.Hash) {
+                # Room for the backup suffix and the temporary file, checked before any write.
+                if ($destination.Length + 31 -ge 260) { throw "Insufficient path length for backup file: $destination" }
+                $conflicts.Add($file)
             }
         } else {
             if (([IO.Path]::GetDirectoryName($destination)).Length + 42 -ge 260) {
@@ -138,7 +147,22 @@ Requires Windows PowerShell 5.1 or PowerShell 7 on Windows.
         }
     }
     Write-Output "Validated $Harness presets for $Target ($($pending.Count) new files)."
+    if ($conflicts.Count -gt 0) {
+        Write-Output "$($conflicts.Count) conflicting file(s):"
+        foreach ($file in $conflicts) { Write-Output ('  ' + (Normalize-Path ([IO.Path]::Combine($Target, $file.Relative)))) }
+    }
     if ($DryRun) { Write-Output 'Dry run: no changes made.'; exit 0 }
+    if ($conflicts.Count -gt 0 -and -not $Update) {
+        if ([Console]::IsInputRedirected -or [Environment]::GetCommandLineArgs() -contains '-NonInteractive') {
+            throw 'File conflicts found. Re-run with -Update to replace them (backups are kept) or resolve them first.'
+        }
+        while ($true) {
+            $answer = Read-Host 'Stop or update these files? (backups are kept) [s]top/[u]pdate'
+            if ($answer -in @('u', 'U', 'update')) { break }
+            if ($answer -in @('', 's', 'S', 'stop')) { throw 'Installation stopped; no files were changed.' }
+            Write-Output 'Answer s or u.'
+        }
+    }
     $writing = $true
     Assert-DirectoryChain $Target
     [void][IO.Directory]::CreateDirectory($Target)
@@ -162,7 +186,28 @@ Requires Windows PowerShell 5.1 or PowerShell 7 on Windows.
         [IO.File]::Move($temporary, $destination)
         $temporary = $null
     }
-    Write-Output 'Installation complete. Existing files were preserved.'
+    $stamp = Get-Date -Format 'yyyyMMddHHmmss'
+    foreach ($file in $conflicts) {
+        $source = [IO.Path]::Combine($sourceRoot, $file.Relative)
+        $destination = [IO.Path]::Combine($Target, $file.Relative)
+        $parent = [IO.Path]::GetDirectoryName($destination)
+        Assert-DirectoryChain ([IO.Path]::GetDirectoryName($source))
+        Assert-NoLink $source
+        Assert-DirectoryChain $parent
+        Assert-NoLink $destination
+        # Keep the user's version, then swap in the preset through a verified temporary copy.
+        [IO.File]::Copy($destination, "$destination.preset-backup.$stamp", $false)
+        $temporary = [IO.Path]::Combine($parent, ('.preset-' + [guid]::NewGuid().ToString('N')))
+        [IO.File]::Copy($source, $temporary, $false)
+        if ((Get-FileHash -LiteralPath $temporary -Algorithm SHA256).Hash -ne $file.Hash) { throw "Source changed during installation: $source" }
+        [IO.File]::Replace($temporary, $destination, $null)
+        $temporary = $null
+    }
+    if ($conflicts.Count -gt 0) {
+        Write-Output "Installation complete. $($conflicts.Count) file(s) updated; originals saved as *.preset-backup.$stamp."
+    } else {
+        Write-Output 'Installation complete. Existing files were preserved.'
+    }
     exit 0
 } catch {
     [Console]::Error.WriteLine('Error: ' + $_.Exception.Message)

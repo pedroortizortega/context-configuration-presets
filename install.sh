@@ -1,19 +1,22 @@
 #!/usr/bin/env bash
-# Install coding presets into a project root without replacing user files.
+# Install coding presets into a project root; conflicting files are replaced only after confirmation.
 set -Eeo pipefail
 fail() { printf 'Error: %s\n' "$*" >&2; exit 1; }
 usage() {
     cat <<'HELP'
-Usage: bash install.sh --harness codex|claude --target PROJECT_DIR [--dry-run]
+Usage: bash install.sh --harness codex|claude --target PROJECT_DIR [--dry-run] [--update]
 Without arguments, an interactive terminal prompts for the harness and directory.
 The target is the project root, not its .codex or .claude directory.
-Existing identical files are skipped; conflicting files abort before any writes.
+Existing identical files are skipped. Conflicting files are listed before any write; an interactive
+terminal asks whether to stop or update them, and a non-interactive run stops unless --update is given.
+Updated files are first saved next to the original as <file>.preset-backup.<timestamp>.
 Symlinks and paths containing '..' are rejected. Use an absolute path instead.
---dry-run validates and previews without creating files or directories.
+--dry-run validates and previews (including conflicts) without creating files or directories.
+--update replaces conflicting files without asking (backups are kept).
 Requires Bash and standard Unix utilities (Linux, macOS, or WSL).
 HELP
 }
-harness='' target='' dry_run=false
+harness='' target='' dry_run=false update=false
 if (($# == 0)); then
     [[ -t 0 ]] || fail 'No interactive terminal. Provide --harness and --target.'
     printf 'Harness: 1) Codex  2) Claude Code\n'
@@ -29,6 +32,7 @@ else
                 if [[ "$1" == --harness ]]; then harness=$2; else target=$2; fi
                 shift 2 ;;
             --dry-run) dry_run=true; shift ;;
+            --update) update=true; shift ;;
             -h|--help) usage; exit 0 ;;
             *) fail "Unknown argument: $1" ;;
         esac
@@ -61,7 +65,7 @@ esac
 case "$target" in "$repo"|"$repo"/*) fail 'Target must be outside the preset repository.' ;; esac
 case "$repo" in "$target"/*) fail 'Target must not contain the preset repository.' ;; esac
 case "${target##*/}" in .codex|.claude) fail 'Pass the project root, not the harness directory.' ;; esac
-paths=(".$harness" deploy openspec ops scripts/verify.sh .env.test.example .gitignore.extras AGENTS.md ORCHESTRATION.md QUALITY_GATES.md)
+paths=(".$harness" deploy openspec ops scripts/verify.sh .env.test.example .gitignore.extras AGENTS.md ORCHESTRATION.md QUALITY_GATES.md QUALITY_GATES_FRONTEND.md)
 [[ "$harness" != claude ]] || paths+=(CLAUDE.md)
 directories=() files=()
 shopt -s nullglob dotglob
@@ -91,20 +95,38 @@ check_parents() {
     done
 }
 for path in "${directories[@]}"; do check_parents "$target/$path"; done
-pending=()
+pending=() conflicts=()
 for path in "${files[@]}"; do
     destination="$target/$path"
     check_parents "${destination%/*}"
     [[ ! -L "$destination" ]] || fail "Symlink destination: $destination"
     if [[ -e "$destination" ]]; then
-        [[ -f "$destination" ]] && cmp -s "$source_root/$path" "$destination" || fail "File conflict: $destination (back up or move it first)."
-        [[ ! -x "$source_root/$path" || -x "$destination" ]] || fail "Executable permission conflict: $destination"
+        [[ -f "$destination" ]] || fail "File conflict: $destination is not a regular file (back up or move it first)."
+        # Different content or a missing executable bit means the user's file diverges from the preset.
+        if ! cmp -s "$source_root/$path" "$destination" || [[ -x "$source_root/$path" && ! -x "$destination" ]]; then
+            conflicts+=("$path")
+        fi
     else
         pending+=("$path")
     fi
 done
 printf 'Validated %s presets for %s (%s new files).\n' "$harness" "$target" "${#pending[@]}"
+if ((${#conflicts[@]})); then
+    printf '%s conflicting file(s):\n' "${#conflicts[@]}"
+    for path in "${conflicts[@]}"; do printf '  %s\n' "$target/$path"; done
+fi
 if "$dry_run"; then printf 'Dry run: no changes made.\n'; exit 0; fi
+if ((${#conflicts[@]})) && ! "$update"; then
+    [[ -t 0 ]] || fail 'File conflicts found. Re-run with --update to replace them (backups are kept) or resolve them first.'
+    while :; do
+        read -r -p 'Stop or update these files? (backups are kept) [s]top/[u]pdate: ' answer || fail 'Input cancelled; no files were changed.'
+        case "$answer" in
+            [uU]|update) break ;;
+            [sS]|stop|'') fail 'Installation stopped; no files were changed.' ;;
+            *) printf 'Answer s or u.\n' ;;
+        esac
+    done
+fi
 # Runtime failures can leave a partial installation; unchanged files are safe to retry.
 trap 'printf "Installation failed; some new files may remain. Resolve the error and retry.\n" >&2' ERR
 temporary=''
@@ -122,4 +144,18 @@ for path in "${pending[@]}"; do
     rm -f -- "$temporary"
     temporary=''
 done
-printf 'Installation complete. Existing files were preserved.\n'
+stamp=$(date +%Y%m%d%H%M%S)
+for path in "${conflicts[@]}"; do
+    # Keep the user's version, then swap in the preset with an atomic rename.
+    destination="$target/$path"
+    cp -p -- "$destination" "$destination.preset-backup.$stamp"
+    temporary=$(mktemp "${destination%/*}/.preset-install.XXXXXX")
+    cp -p -- "$source_root/$path" "$temporary"
+    mv -f -- "$temporary" "$destination"
+    temporary=''
+done
+if ((${#conflicts[@]})); then
+    printf 'Installation complete. %s file(s) updated; originals saved as *.preset-backup.%s.\n' "${#conflicts[@]}" "$stamp"
+else
+    printf 'Installation complete. Existing files were preserved.\n'
+fi
