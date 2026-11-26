@@ -65,7 +65,7 @@ Every path below is relative to `coding/` in the source and the project root in 
 |---|---|
 | Codex only | `.codex/` → `.codex/` |
 | Claude Code only | `.claude/` → `.claude/`; `CLAUDE.md` → `CLAUDE.md` |
-| Both selections | `AGENTS.md`, `ORCHESTRATION.md`, `QUALITY_GATES.md` → the same root filenames |
+| Both selections | `AGENTS.md`, `ORCHESTRATION.md`, `QUALITY_GATES.md`, `QUALITY_GATES_FRONTEND.md` → the same root filenames |
 | Both selections | `deploy/`, `openspec/`, `ops/` → the same directories |
 | Both selections | `scripts/verify.sh` → `scripts/verify.sh` |
 | Both selections | `.env.test.example`, `.gitignore.extras` → the same root filenames |

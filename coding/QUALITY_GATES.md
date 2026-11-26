@@ -17,6 +17,8 @@ Replace the commands with the real ones of the repository and keep them identica
 
 UPPERCASE tokens (`CONTRACT_TESTS_PATH`, `INTEGRATION_COMPOSE_FILE`, `INTEGRATION_SERVICE`) are placeholders that are replaced once per project, in this file and in `scripts/verify.sh`. If they are left unreplaced, `verify.sh` fails with exit code 2 instead of running an invented command.
 
+Frontend groups (implemented by the `frontend-developer`) are gated by `QUALITY_GATES_FRONTEND.md`, a separate file you can edit to your own stack. Its applicable gates are also required for `READY_FOR_HUMAN`.
+
 A gate that does not apply must be recorded as `not_applicable` with a justification; never as `pass`.
 
 ## Criteria for READY_FOR_HUMAN

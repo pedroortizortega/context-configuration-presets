@@ -42,6 +42,13 @@ try {
     Run 1 @('-Harness', 'codex', '-Target', $conflict)
     Assert (-not [IO.Directory]::Exists((Join-Path $conflict '.codex'))) 'Conflict caused partial copy.'
     Assert ([IO.File]::ReadAllText((Join-Path $conflict 'QUALITY_GATES.md')) -eq 'custom') 'Overwrote conflict.'
+    # Conflicts: dry run only reports, -Update replaces the file and keeps a backup.
+    Run 0 @('-Harness', 'codex', '-Target', $conflict, '-DryRun')
+    Assert ([IO.File]::ReadAllText((Join-Path $conflict 'QUALITY_GATES.md')) -eq 'custom') 'Dry run changed conflict.'
+    Run 0 @('-Harness', 'codex', '-Target', $conflict, '-Update')
+    Assert ((Get-FileHash -LiteralPath (Join-Path $conflict 'QUALITY_GATES.md')).Hash -eq (Get-FileHash -LiteralPath (Join-Path $fixture 'coding\QUALITY_GATES.md')).Hash) 'Update did not replace conflict.'
+    $backup = @(Get-ChildItem -LiteralPath $conflict -Filter 'QUALITY_GATES.md.preset-backup.*')
+    Assert ($backup.Count -eq 1 -and [IO.File]::ReadAllText($backup[0].FullName) -eq 'custom') 'Missing conflict backup.'
     foreach ($unsafe in @($fixture, $root, $HOME, [IO.Path]::GetPathRoot($root), (Join-Path $root '..\escape'), (Join-Path $root '.codex'), (Join-Path $root 'trailing.'), (Join-Path $root 'NUL'), '\\server\share\project')) {
         Run 1 @('-Harness', 'codex', '-Target', $unsafe, '-DryRun')
     }
